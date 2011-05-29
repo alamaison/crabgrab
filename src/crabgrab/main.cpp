@@ -29,6 +29,7 @@
     @endif
 */
 
+#include "crabgrab/clipboard.hpp" // put_clipboard_text
 #include "crabgrab/convert_hbitmap.hpp"
 #include "crabgrab/encode_bmp.hpp"
 #include "crabgrab/twitpic/response.hpp" // handle_response
@@ -93,18 +94,35 @@ void grab_window_to(HWND hwnd, const boost::filesystem::path& snapshot_file)
     std::string password;
     std::cin >> password;
 
-    std::string url = twitpic::upload_image(
+    std::string xml_response = twitpic::upload_image(
         username, password, encode_as_png(bmp));
 
+    std::string url;
     try
     {
-        std::cout << "Your screenshot is here: " << 
-            twitpic::handle_response(url) << std::endl;
+        url = twitpic::handle_response(xml_response);
     }
     catch (const twitpic::twitpic_exception& e)
     {
         std::cerr << "FAILED: " << e.what() << std::endl;
+        return;
     }
+
+    try
+    {
+        put_clipboard_text(url);
+    }
+    catch (const std::exception& e)
+    {
+        std::cerr << "CLIPBOARD FAILURE: " << e.what() << std::endl;
+        std::cout <<
+            "Crabgrab couldn't put the link to your screenshot onto the "
+            "clipboard to here it is instead: " << url << std::endl;
+        return;
+    }
+
+    std::cout <<
+        "The link to your screenshot is on the clipboard." << std::endl;
 }
 
 

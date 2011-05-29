@@ -1,6 +1,7 @@
 ## Sources
 
 set(CRABGRAB_SOURCES
+  crabgrab/clipboard.hpp
   crabgrab/convert_hbitmap.hpp
   crabgrab/encode_bmp.hpp
   crabgrab/encode_bmp.cpp
