@@ -52,7 +52,7 @@
 
 namespace crabgrab {
 
-void grab_window_to(HWND hwnd, const boost::filesystem::path& snapshot_file)
+void grab_window(HWND hwnd)
 {
     boost::shared_ptr< boost::remove_pointer<HDC>::type > window_device_context(
         ::GetWindowDC(hwnd), boost::bind<int>(ReleaseDC, hwnd, _1));
@@ -185,7 +185,7 @@ private:
 
                     try
                     {
-                        crabgrab::grab_window_to(hwnd, "C:\\goose.bmp");
+                        grab_window(hwnd);
                     }
                     catch (const std::exception& e)
                     {
