@@ -29,9 +29,9 @@
     @endif
 */
 
-#include "convert_hbitmap.hpp"
-#include "encode_bmp.hpp"
-#include "twitpic.hpp"
+#include "crabgrab/convert_hbitmap.hpp"
+#include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/twitpic/twitpic.hpp"
 
 #include <winapi/error.hpp> // last_error
 #include <winapi/hook.hpp> // windows_hook
@@ -48,7 +48,7 @@
 #include <Windows.h>
 #include <tchar.h>
 
-namespace crab {
+namespace crabgrab {
 
 void grab_window_to(HWND hwnd, const boost::filesystem::path& snapshot_file)
 {
@@ -157,7 +157,7 @@ private:
 
                     try
                     {
-                        crab::grab_window_to(hwnd, "C:\\goose.bmp");
+                        crabgrab::grab_window_to(hwnd, "C:\\goose.bmp");
                     }
                     catch (const std::exception& e)
                     {
@@ -215,7 +215,7 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     try
     {
-        crab::run();
+        crabgrab::run();
     }
     catch (const std::exception& e)
     {

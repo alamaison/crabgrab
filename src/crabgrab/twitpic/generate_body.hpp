@@ -1,7 +1,7 @@
 /**
     @file
 
-    TwitPic upload.
+    TwitPic form upload body.
 
     @if license
 
@@ -29,20 +29,19 @@
     @endif
 */
 
-#ifndef CRAB_TWITPIC_HPP
-#define CRAB_TWITPIC_HPP
+#ifndef CRABGRAB_GENERATE_BODY_HPP
+#define CRABGRAB_GENERATE_BODY_HPP
 
 #include <string>
 #include <vector>
 
-namespace crab {
+namespace crabgrab {
 namespace twitpic {
 
-std::string upload_image(
+std::string generate_body(
     const std::string& username, const std::string& password,
-    const std::vector<unsigned char>& image_bits);
+    const std::string& boundary, const std::vector<unsigned char>& image_bits);
 
 }}
 
 #endif
-

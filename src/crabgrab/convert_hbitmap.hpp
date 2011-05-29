@@ -46,7 +46,7 @@
 
 #include <Windows.h>
 
-namespace crab {
+namespace crabgrab {
 namespace detail {
 
 inline BITMAPINFOHEADER dib_information(HBITMAP bitmap, HDC device_context)

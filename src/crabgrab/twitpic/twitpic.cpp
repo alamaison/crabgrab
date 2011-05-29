@@ -1,7 +1,7 @@
 /**
     @file
 
-    TwitPic form upload body.
+    TwitPic upload.
 
     @if license
 
@@ -29,43 +29,54 @@
     @endif
 */
 
-#include "generate_body.hpp"
+#include "crabgrab/twitpic/twitpic.hpp"
 
+#include "crabgrab/twitpic/generate_body.hpp"
+
+#include <urdl/http.hpp>
+#include <urdl/istream.hpp>
+
+#include <iostream>
 #include <sstream>
 
-namespace crab {
+namespace crabgrab {
 namespace twitpic {
 
-std::string generate_body(
+std::string upload_image(
     const std::string& username, const std::string& password,
-    const std::string& boundary, const std::vector<unsigned char>& image_bits)
+    const std::vector<unsigned char>& image_bits)
 {
-    std::ostringstream body_data(std::ios_base::binary);
-    std::string crlf = "\r\n";
+    urdl::istream is;
+    
+    std::string boundary = "CrabgrabBoundary361654164136464264983165078168";
 
-    body_data << "--" + boundary << crlf;
-    body_data << "Content-Disposition: form-data; name=\"username\"" << crlf;
-    body_data << crlf;
-    body_data << username << crlf;
+    is.set_option(urdl::http::request_method("POST"));
 
-    body_data << "--" + boundary << crlf;
-    body_data << "Content-Disposition: form-data; name=\"password\"" << crlf;
-    body_data << crlf;
-    body_data << password << crlf;
+    is.set_option(
+        urdl::http::request_content_type(
+            "multipart/form-data; boundary=" + boundary));
+    is.set_option(urdl::http::user_agent("crabgrab"));
 
-    body_data << "--" + boundary << crlf;
-    body_data << "Content-Disposition: form-data; name=\"media\"; "
-        "filename=\"dummyfile.jpg\"" << crlf;
-    body_data << "Content-Type: application/octet-stream" << crlf;
-    body_data << crlf;
-    body_data.write(
-        reinterpret_cast<const char*>(&image_bits[0]), image_bits.size());
-    body_data << crlf;
+    std::string form_body = generate_body
+        (username, password, boundary, image_bits);
 
-    body_data << "--" + boundary + "--" << crlf;
-    body_data << crlf;
+    is.set_option(urdl::http::request_content(form_body));
 
-    return body_data.str();
+    is.open("http://twitpic.com/api/upload");
+    if (!is)
+    {
+        std::cerr << "Unable to open URL" << std::endl;
+        return "";
+    }
+
+    std::ostringstream response;
+    std::string line;
+    while (std::getline(is, line))
+    {
+        response << line << std::endl;
+    }
+    
+    return response.str();
 }
 
 }}

@@ -29,16 +29,16 @@
     @endif
 */
 
-#include "encode_bmp.hpp"
+#include "crabgrab/encode_bmp.hpp"
 
 #include <bitmap.h>
-#include <lodepng.h>
+#include <LodePNG/lodepng.h>
 
 #include <algorithm> // copy
 #include <cassert> // assert
 #include <sstream> // stringstream
 
-namespace crab {
+namespace crabgrab {
 
 namespace {
 

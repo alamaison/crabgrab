@@ -21,13 +21,13 @@ Building Crabgrab depends on some third-party libraries.
     should automatically detect Boost if you installed it in the usual
     ways and will set up the include and library paths as needed.
 
-  * [winapi] is our C++ wrapper around the Windows API.  Some Git
-    clients will automatically download the library for you.  If not,
-    run `git submodule update --init`. No seperate build process nor
-    library path is needed because winapi is a header-only library.
+  * [winapi] is our C++ wrapper around the Windows API.  Run `git
+    submodule update --init` to clone the source files into the right
+    place. No seperate build process nor library path is needed
+    because winapi is a header-only library.
 
   * [Urdl] a modern, lightweight, C++ library for accessing the web.
-    Add `urdl/include` to the include path or put Urld into a
+    Add `src/urdl/include` to the include path or put Urld into a
     directory called `urdl` in the top-level directory.  No seperate
     build process nor library path is needed as we are using Urdl in
     header-only mode.

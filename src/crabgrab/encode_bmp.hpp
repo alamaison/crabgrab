@@ -34,7 +34,7 @@
 
 #include <vector>
 
-namespace crab {
+namespace crabgrab {
 
 std::vector<unsigned char> encode_as_png(
     const std::vector<unsigned char>& bmp_bytes);
