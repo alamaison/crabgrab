@@ -31,6 +31,7 @@
 
 #include "crabgrab/convert_hbitmap.hpp"
 #include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/twitpic/response.hpp" // handle_response
 #include "crabgrab/twitpic/twitpic.hpp"
 
 #include <winapi/error.hpp> // last_error
@@ -94,7 +95,16 @@ void grab_window_to(HWND hwnd, const boost::filesystem::path& snapshot_file)
 
     std::string url = twitpic::upload_image(
         username, password, encode_as_png(bmp));
-    std::cout << url;
+
+    try
+    {
+        std::cout << "Your screenshot is here: " << 
+            twitpic::handle_response(url) << std::endl;
+    }
+    catch (const twitpic::twitpic_exception& e)
+    {
+        std::cerr << "FAILED: " << e.what() << std::endl;
+    }
 }
 
 
