@@ -4,6 +4,7 @@ project(crabgrab)
 include_directories(src)
 include_directories(src/urdl/include)
 include_directories(src/winapi/include)
+include_directories(src/comet/include)
 
 ## Boost
 
@@ -19,7 +20,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 add_definitions(
   -DWIN32_LEAN_AND_MEAN -D_SCL_SECURE_NO_WARNINGS -DURDL_HEADER_ONLY=1
-  -D_WIN32_WINNT=0x0501)
+  -D_WIN32_WINNT=0x0501 -DBOOST_FILESYSTEM_VERSION=2)
 
 ## Build
 

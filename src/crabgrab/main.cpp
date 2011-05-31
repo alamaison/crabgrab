@@ -32,14 +32,18 @@
 #include "crabgrab/clipboard.hpp" // put_clipboard_text
 #include "crabgrab/convert_hbitmap.hpp"
 #include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/notification.hpp" // notification_system
 #include "crabgrab/twitpic/response.hpp" // handle_response
 #include "crabgrab/twitpic/twitpic.hpp"
 
+#include <winapi/dynamic_link.hpp> // module_handle
 #include <winapi/error.hpp> // last_error
+#include <winapi/gui/icon.hpp> // load_icon
 #include <winapi/hook.hpp> // windows_hook
 
 #include <boost/bind.hpp> // bind
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
+#include <boost/make_shared.hpp> // make_shared
 #include <boost/shared_ptr.hpp> // shared_ptr
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
 #include <boost/type_traits/remove_pointer.hpp> // remove_pointer
@@ -49,6 +53,42 @@
 
 #include <Windows.h>
 #include <tchar.h>
+
+using crabgrab::notification_system;
+
+using winapi::gui::load_icon;
+using winapi::gui::hicon;
+using winapi::module_handle;
+
+using boost::diagnostic_information;
+using boost::make_shared;
+using boost::shared_ptr;
+
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::exception;
+using std::string;
+
+namespace {
+
+    shared_ptr<notification_system> notifications;
+    unsigned int icon_id;
+
+    void notification_message(const string& title, const string& message)
+    {
+        try
+        {
+            notifications->notification_message(icon_id, title, message);
+        }
+        catch (const exception& e)
+        {
+            cerr << "NOTIFICATION FAILURE:" << endl;
+            cerr << diagnostic_information(e) << endl;
+        }
+    }
+
+}
 
 namespace crabgrab {
 
@@ -94,6 +134,9 @@ void grab_window(HWND hwnd)
     std::string password;
     std::cin >> password;
 
+    notification_message(
+        "Crabgrab", "Uploading your screenshot to TwitPic ...");
+
     std::string xml_response = twitpic::upload_image(
         username, password, encode_as_png(bmp));
 
@@ -112,17 +155,18 @@ void grab_window(HWND hwnd)
     {
         put_clipboard_text(url);
     }
-    catch (const std::exception& e)
+    catch (const exception& e)
     {
-        std::cerr << "CLIPBOARD FAILURE: " << e.what() << std::endl;
-        std::cout <<
+        cerr << "CLIPBOARD FAILURE: " << endl;
+        cerr << diagnostic_information(e) << endl; 
+        cout <<
             "Crabgrab couldn't put the link to your screenshot onto the "
-            "clipboard to here it is instead: " << url << std::endl;
+            "clipboard so here it is instead: " << url << endl;
         return;
     }
 
-    std::cout <<
-        "The link to your screenshot is on the clipboard." << std::endl;
+    notification_message(
+        "Crabgrab", "The link to your screenshot is on the clipboard.");
 }
 
 
@@ -187,9 +231,10 @@ private:
                     {
                         grab_window(hwnd);
                     }
-                    catch (const std::exception& e)
+                    catch (const exception& e)
                     {
-                        std::cout << e.what();
+                        cerr << "Unhandled exception in keyboard hook:" << endl;
+                        cerr << diagnostic_information(e) << endl;
                     }
 
                     return true;
@@ -243,12 +288,15 @@ int _tmain(int argc, _TCHAR* argv[])
 {
     try
     {
+        notifications = make_shared<notification_system>();
+        icon_id = notifications->add_icon(
+            load_icon(module_handle("user32.dll"), 104, 16, 16).get());
         crabgrab::run();
     }
-    catch (const std::exception& e)
+    catch (const exception& e)
     {
-        std::cerr << "Unhandled exception:" << std::endl;
-        std::cerr << boost::diagnostic_information(e);
+        cerr << "Unhandled exception:" << endl;
+        cerr << diagnostic_information(e) << endl;
     }
 
     return 0;

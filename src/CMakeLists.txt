@@ -5,6 +5,8 @@ set(CRABGRAB_SOURCES
   crabgrab/convert_hbitmap.hpp
   crabgrab/encode_bmp.hpp
   crabgrab/encode_bmp.cpp
+  crabgrab/notification.hpp
+  crabgrab/notification.cpp
   crabgrab/twitpic/generate_body.hpp
   crabgrab/twitpic/generate_body.cpp
   crabgrab/twitpic/response.hpp
