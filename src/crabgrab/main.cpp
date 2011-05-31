@@ -50,9 +50,6 @@
 #include <Windows.h>
 #include <tchar.h>
 
-using crabgrab::notification_system;
-using crabgrab::take_screenshot;
-
 using winapi::gui::load_icon;
 using winapi::gui::hicon;
 using winapi::module_handle;
@@ -67,27 +64,38 @@ using std::endl;
 using std::exception;
 using std::string;
 
+namespace crabgrab {
+
 namespace {
 
-    shared_ptr<notification_system> notifications;
-    unsigned int icon_id;
-
-    void notification_message(const string& title, const string& message)
-    {
-        try
-        {
-            notifications->notification_message(icon_id, title, message);
-        }
-        catch (const exception& e)
-        {
-            cerr << "NOTIFICATION FAILURE:" << endl;
-            cerr << diagnostic_information(e) << endl;
-        }
-    }
-
+/**
+ * Return Crabgrab's tray icon.
+ *
+ * There is only one instance of the icon as a static variable.  This ensures
+ * we don't clutter the tray with multiple, possibly stale icons.
+ */
+notification_icon& tray_icon()
+{
+    static notification_icon icon(notification_system().add_icon(
+        load_icon(module_handle("user32.dll"), 104, 16, 16).get()));
+    return icon;
 }
 
-namespace crabgrab {
+/**
+ * Display a balloon message on Crabgrab's notification icon.
+ */
+void notification_message(const string& title, const string& message)
+{
+    try
+    {
+        tray_icon().show_message(title, message);
+    }
+    catch (const exception& e)
+    {
+        cerr << "NOTIFICATION FAILURE:" << endl;
+        cerr << diagnostic_information(e) << endl;
+    }
+}
 
 void grab_window(HWND hwnd)
 {
@@ -250,14 +258,12 @@ void run()
 }
 
 }
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
     try
     {
-        notifications = make_shared<notification_system>();
-        icon_id = notifications->add_icon(
-            load_icon(module_handle("user32.dll"), 104, 16, 16).get());
         crabgrab::run();
     }
     catch (const exception& e)

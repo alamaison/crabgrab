@@ -36,6 +36,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+using crabgrab::notification_icon;
 using crabgrab::notification_system;
 
 using winapi::gui::load_icon;
@@ -63,16 +64,81 @@ BOOST_AUTO_TEST_CASE( show_icon )
 }
 
 /**
+ * Show two icons at the same time.
+ */
+BOOST_AUTO_TEST_CASE( show_multiple_icons_concurrently )
+{
+    notification_system n;
+
+    notification_icon icon1 = n.add_icon(dummy_icon().get());
+    notification_icon icon2 = n.add_icon(dummy_icon().get());
+    ::Sleep(1000);
+}
+
+/**
+ * Show two icons destroying the first before showing the second.
+ */
+BOOST_AUTO_TEST_CASE( show_multiple_icons_consecutively )
+{
+    notification_system n;
+
+    {
+        notification_icon icon = n.add_icon(dummy_icon().get());
+    }
+    ::Sleep(1000);
+    {
+        notification_icon icon = n.add_icon(dummy_icon().get());
+    }
+    ::Sleep(1000);
+}
+
+/**
  * Notify the user with a simple text message.
  */
 BOOST_AUTO_TEST_CASE( show_notification )
 {
     notification_system n;
 
-    n.notification_message(
-        n.add_icon(dummy_icon().get()), "Testing ...",
-        "Testing Crabgrab notifications");
+    notification_icon icon = n.add_icon(dummy_icon().get());
+    icon.show_message("Testing ...", "Testing Crabgrab notifications");
     ::Sleep(1000);
+}
+
+/**
+ * Display a notification on each of two icons.
+ */
+BOOST_AUTO_TEST_CASE( show_notifications_concurrently )
+{
+    notification_system n;
+
+    notification_icon icon1 = n.add_icon(dummy_icon().get());
+    icon1.show_message(
+        "Testing here..", "01234567890!\"£$%^&*()_+-={}[]:@~;'#<>?,./\\`¬¦€");
+
+    notification_icon icon2 = n.add_icon(dummy_icon().get());
+    icon2.show_message("And testing there ...", "Te&sting");
+
+    ::Sleep(1000);
+}
+
+/**
+ * Display a notification on each of two icons destroying the first icon
+ * before showing the second.
+ */
+BOOST_AUTO_TEST_CASE( show_notifications_consecutively )
+{
+    notification_system n;
+
+    {
+        notification_icon icon = n.add_icon(dummy_icon().get());
+        icon.show_message("Today is Friday", "Tomorrow is Saturday ...");
+        ::Sleep(1000);
+    }
+    {
+        notification_icon icon = n.add_icon(dummy_icon().get());
+        icon.show_message("And Sunday comes after", "Fun. Fun. Fun. Fun.");
+        ::Sleep(1000);
+    }
 }
 
 /**
@@ -82,12 +148,12 @@ BOOST_AUTO_TEST_CASE( show_multiple_notifications )
 {
     notification_system n;
 
-    unsigned int id = n.add_icon(dummy_icon().get());
-    n.notification_message(id, "Testing ...", "1");
+    notification_icon icon = n.add_icon(dummy_icon().get());
+    icon.show_message("Testing ...", "1");
     ::Sleep(300);
-    n.notification_message(id, "Testing ...", "2");
+    icon.show_message("Testing ...", "2");
     ::Sleep(300);
-    n.notification_message(id, "Testing ...", "3");
+    icon.show_message("Testing ...", "3");
     ::Sleep(300);
 }
 
