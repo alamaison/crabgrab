@@ -7,6 +7,7 @@ set(CRABGRAB_SOURCES
   crabgrab/encode_bmp.cpp
   crabgrab/notification.hpp
   crabgrab/notification.cpp
+  crabgrab/screenshot.hpp
   crabgrab/twitpic/generate_body.hpp
   crabgrab/twitpic/generate_body.cpp
   crabgrab/twitpic/response.hpp

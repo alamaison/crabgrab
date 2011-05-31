@@ -30,23 +30,19 @@
 */
 
 #include "crabgrab/clipboard.hpp" // put_clipboard_text
-#include "crabgrab/convert_hbitmap.hpp"
 #include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/screenshot.hpp" // take_screenshot
 #include "crabgrab/notification.hpp" // notification_system
 #include "crabgrab/twitpic/response.hpp" // handle_response
 #include "crabgrab/twitpic/twitpic.hpp"
 
 #include <winapi/dynamic_link.hpp> // module_handle
-#include <winapi/error.hpp> // last_error
 #include <winapi/gui/icon.hpp> // load_icon
 #include <winapi/hook.hpp> // windows_hook
 
-#include <boost/bind.hpp> // bind
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
 #include <boost/make_shared.hpp> // make_shared
 #include <boost/shared_ptr.hpp> // shared_ptr
-#include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
-#include <boost/type_traits/remove_pointer.hpp> // remove_pointer
 
 #include <iostream> // cout, cin, cerr
 #include <string>
@@ -55,6 +51,7 @@
 #include <tchar.h>
 
 using crabgrab::notification_system;
+using crabgrab::take_screenshot;
 
 using winapi::gui::load_icon;
 using winapi::gui::hicon;
@@ -94,37 +91,7 @@ namespace crabgrab {
 
 void grab_window(HWND hwnd)
 {
-    boost::shared_ptr< boost::remove_pointer<HDC>::type > window_device_context(
-        ::GetWindowDC(hwnd), boost::bind<int>(ReleaseDC, hwnd, _1));
-    if (!window_device_context)
-        BOOST_THROW_EXCEPTION(std::exception("Failed to get device context"));
-
-    boost::shared_ptr< boost::remove_pointer<HDC>::type > snapshot_device_context(
-        ::CreateCompatibleDC(window_device_context.get()), DeleteDC);
-    if (!snapshot_device_context)
-        BOOST_THROW_EXCEPTION(
-            std::exception("Failed to create device context"));
-
-    RECT r;
-    ::GetWindowRect(hwnd, &r);
-
-    boost::shared_ptr< boost::remove_pointer<HBITMAP>::type > snapshot(
-        ::CreateCompatibleBitmap(
-            window_device_context.get(), r.right - r.left, r.bottom - r.top),
-            ::DeleteObject);
-    if (!snapshot)
-        BOOST_THROW_EXCEPTION(std::exception("Failed to create bitmap"));
-
-    HBITMAP orig = reinterpret_cast<HBITMAP>(
-        ::SelectObject(snapshot_device_context.get(), snapshot.get()));
-    if (!::BitBlt(
-        snapshot_device_context.get(), 0, 0, r.right - r.left, 
-        r.bottom - r.top, window_device_context.get(), 0, 0, SRCCOPY))
-        BOOST_THROW_EXCEPTION(winapi::last_error());
-    ::SelectObject(snapshot_device_context.get(), orig);
-
-    std::vector<unsigned char> bmp = convert_hbitmap_to_bmp(
-        snapshot.get(), snapshot_device_context.get());
+    std::vector<unsigned char> bmp = take_screenshot(hwnd);
 
     std::cout << "TwitPic username: ";
     std::string username;
