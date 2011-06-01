@@ -32,6 +32,7 @@
 #include "crabgrab/notification.hpp"
 
 #include <winapi/error.hpp> // last_error
+#include <winapi/gui/windows/window.hpp> // hwnd_t
 #include <winapi/trace.hpp> // trace
 
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
@@ -73,14 +74,19 @@ namespace {
     /**
      * @todo Set size by sniffing OS version.
      */
-    NOTIFYICONDATA notifyicondata()
+    NOTIFYICONDATA notifyicondata(hwnd_t message_window)
     {
         NOTIFYICONDATA data = NOTIFYICONDATA();
         //data.cbSize = NOTIFYICONDATA_V2_SIZE;
         data.cbSize = sizeof(data);
+        data.hWnd = message_window.get();
         return data;
     }
 
+    /**
+     * Create an instance of the special window class meant only for recieving
+     * and dispatching window messages.
+     */
     hwnd_t create_message_only_window()
     {
         HWND raw_handle = ::CreateWindowEx(
@@ -93,6 +99,40 @@ namespace {
         return hwnd_t(raw_handle, ::DestroyWindow);
     }
 
+    class notification_system : noncopyable
+    {
+    public:
+        notification_system()
+            : m_message_window(create_message_only_window()),
+              m_current_max_id(0) {}
+
+        hwnd_t message_window()
+        {
+            return m_message_window;
+        }
+
+        unsigned int next_window_id()
+        {
+            return ++m_current_max_id;
+        }
+
+    private:
+        const winapi::gui::hwnd_t m_message_window;
+        unsigned int m_current_max_id;
+    };
+
+    /**
+     * Manage static 'notification system'.
+     *
+     * This is the global data shared by all notification items using our
+     * notification wrapper.
+     */
+    notification_system& system()
+    {
+        static notification_system system;
+        return system;
+    }
+
     void shell_notify_icon(DWORD action, NOTIFYICONDATA& data)
     {
         if (::Shell_NotifyIcon(action, &data) == FALSE)
@@ -103,8 +143,6 @@ namespace {
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 class notification_icon::icon_impl : private noncopyable
 {
 public:
@@ -112,9 +150,8 @@ public:
         unsigned int icon_id, hwnd_t message_window, HICON icon_handle)
         : m_icon_id(icon_id), m_message_window(message_window)
     {
-        NOTIFYICONDATA data = notifyicondata();
+        NOTIFYICONDATA data = notifyicondata(m_message_window);
 
-        data.hWnd = message_window.get();
         data.uID = icon_id;
 
         data.uFlags = NIF_ICON;// | NIF_STATE | NIF_ICON;
@@ -132,9 +169,8 @@ public:
     {
         try
         {
-            NOTIFYICONDATA data = notifyicondata();
+            NOTIFYICONDATA data = notifyicondata(m_message_window);
 
-            data.hWnd = m_message_window.get();
             data.uID = m_icon_id;
 
             shell_notify_icon(NIM_DELETE, data);
@@ -152,9 +188,8 @@ public:
      */
     void show_message(const string& title, const string& message)
     {
-        NOTIFYICONDATA data = notifyicondata();
+        NOTIFYICONDATA data = notifyicondata(m_message_window);
 
-        data.hWnd = m_message_window.get();
         data.uID = m_icon_id;
 
         data.uFlags = NIF_INFO;// | NIF_STATE | NIF_ICON;
@@ -176,23 +211,13 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-notification_system::notification_system()
-    : m_message_window(create_message_only_window()), m_current_max_id(0) {}
+notification_icon::notification_icon(HICON icon_handle)
+    :
+m_impl(
+    make_shared<icon_impl>(
+        system().next_window_id(), system().message_window(), icon_handle)) {}
 
-notification_icon notification_system::add_icon(HICON icon_handle)
-{
-    return notification_icon(++m_current_max_id, m_message_window, icon_handle);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-notification_icon::notification_icon(
-    unsigned int icon_id, hwnd_t message_window, HICON icon_handle)
-    : m_impl(make_shared<icon_impl>(icon_id, message_window, icon_handle))
-{
-}
-void notification_icon::show_message(
-    const std::string& title, const std::string& message)
+void notification_icon::show_message(const string& title, const string& message)
 {
     m_impl->show_message(title, message);
 }

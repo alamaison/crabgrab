@@ -32,29 +32,13 @@
 #ifndef CRABGRAB_NOTIFICATION_HPP
 #define CRABGRAB_NOTIFICATION_HPP
 
-#include <winapi/gui/windows/window.hpp> // hwnd_t
-
 #include <boost/shared_ptr.hpp> // shared_ptr
 
 #include <string>
 
-#include <Windows.h> // HWND, HICON
+#include <Windows.h> // HICON
 
 namespace crabgrab {
-
-class notification_icon;
-
-class notification_system
-{
-public:
-    notification_system();
-
-    notification_icon add_icon(HICON icon_handle);
-
-private:
-    winapi::gui::hwnd_t m_message_window;
-    unsigned int m_current_max_id;
-};
 
 class notification_icon
 {
@@ -62,11 +46,9 @@ public:
     void show_message(
         const std::string& title, const std::string& message);
 
-private:
-    friend class notification_system;
-    notification_icon(
-        unsigned int id, winapi::gui::hwnd_t message_window, HICON icon);
+    notification_icon(HICON icon);
 
+private:
     // No matter how many times this icon is copied, it must only be deleted
     // from the system tray once.  Therefore all icon instances share a single
     // implementation instance.  Essentially, this makes notification_icon an

@@ -32,7 +32,7 @@
 #include "crabgrab/clipboard.hpp" // put_clipboard_text
 #include "crabgrab/encode_bmp.hpp"
 #include "crabgrab/screenshot.hpp" // take_screenshot
-#include "crabgrab/notification.hpp" // notification_system
+#include "crabgrab/notification.hpp" // notification_icon
 #include "crabgrab/twitpic/response.hpp" // handle_response
 #include "crabgrab/twitpic/twitpic.hpp"
 
@@ -76,8 +76,8 @@ namespace {
  */
 notification_icon& tray_icon()
 {
-    static notification_icon icon(notification_system().add_icon(
-        load_icon(module_handle("user32.dll"), 104, 16, 16).get()));
+    static notification_icon icon(
+        load_icon(module_handle("user32.dll"), 104, 16, 16).get());
     return icon;
 }
 
