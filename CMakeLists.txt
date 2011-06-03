@@ -12,7 +12,7 @@ set(Boost_USE_STATIC_LIBS TRUE)
 set(Boost_DETAILED_FAILURE_MSG TRUE)
 set(Boost_ADDITIONAL_VERSIONS 1.46.1)
 # 1.41 is first version with Boost.PropertyTree
-find_package(Boost 1.41 REQUIRED COMPONENTS filesystem system)
+find_package(Boost 1.41 REQUIRED COMPONENTS filesystem system thread)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 

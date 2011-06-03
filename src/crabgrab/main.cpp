@@ -43,6 +43,7 @@
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
 #include <boost/make_shared.hpp> // make_shared
 #include <boost/shared_ptr.hpp> // shared_ptr
+#include <boost/thread.hpp> // thread
 
 #include <iostream> // cout, cin, cerr
 #include <string>
@@ -57,6 +58,7 @@ using winapi::module_handle;
 using boost::diagnostic_information;
 using boost::make_shared;
 using boost::shared_ptr;
+using boost::thread;
 
 using std::cerr;
 using std::cout;
@@ -222,7 +224,7 @@ private:
 
                     try
                     {
-                        grab_window(hwnd);
+                        boost::thread(grab_window, hwnd);
                     }
                     catch (const exception& e)
                     {
