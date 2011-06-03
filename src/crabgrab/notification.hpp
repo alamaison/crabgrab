@@ -40,11 +40,23 @@
 
 namespace crabgrab {
 
+namespace message_icon {
+    enum type
+    {
+        none,
+        information,
+        warning,
+        error,
+        default = none
+    };
+}
+
 class notification_icon
 {
 public:
     void show_message(
-        const std::string& title, const std::string& message);
+        const std::string& title, const std::string& message,
+        message_icon::type icon_type=message_icon::default);
 
     notification_icon(HICON icon);
 

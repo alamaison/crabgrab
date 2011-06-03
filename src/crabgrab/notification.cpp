@@ -43,6 +43,7 @@
 #include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
 
 #include <exception> // exception
+#include <stdexcept> // invalid_argument
 
 #include <ShellAPI.h> // Shell_NotifyIcon, NOTIFYICONDATA
 
@@ -59,6 +60,7 @@ using boost::make_shared;
 using boost::noncopyable;
 
 using std::exception;
+using std::invalid_argument;
 using std::string;
 
 namespace crabgrab {
@@ -81,6 +83,23 @@ namespace {
         data.cbSize = sizeof(data);
         data.hWnd = message_window.get();
         return data;
+    }
+
+    DWORD message_icon_to_info_flags(message_icon::type icon_type)
+    {
+        switch (icon_type)
+        {
+        case message_icon::none:
+            return NIIF_NONE;
+        case message_icon::information:
+            return NIIF_INFO;
+        case message_icon::warning:
+            return NIIF_WARNING;
+        case message_icon::error:
+            return NIIF_ERROR;
+        default:
+            BOOST_THROW_EXCEPTION(invalid_argument("Unknown icon type"));
+        }
     }
 
     /**
@@ -186,7 +205,9 @@ public:
      * @todo  Only use limited buffer on old versions of Windows (rather than
      *        array_length.
      */
-    void show_message(const string& title, const string& message)
+    void show_message(
+        const string& title, const string& message,
+        message_icon::type icon_type)
     {
         NOTIFYICONDATA data = notifyicondata(m_message_window);
 
@@ -196,7 +217,7 @@ public:
 
         message.copy(data.szInfo, array_length(data.szInfo));
         title.copy(data.szInfoTitle, array_length(data.szInfoTitle));
-        data.dwInfoFlags = NIIF_INFO;
+        data.dwInfoFlags = message_icon_to_info_flags(icon_type);
 
         //data.uVersion = NOTIFYICON_VERSION;
         //::Shell_NotifyIcon(NIM_SETVERSION, &data);
@@ -217,9 +238,10 @@ m_impl(
     make_shared<icon_impl>(
         system().next_window_id(), system().message_window(), icon_handle)) {}
 
-void notification_icon::show_message(const string& title, const string& message)
+void notification_icon::show_message(
+    const string& title, const string& message, message_icon::type icon_type)
 {
-    m_impl->show_message(title, message);
+    m_impl->show_message(title, message, icon_type);
 }
 
 }

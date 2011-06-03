@@ -37,6 +37,7 @@
 #include <boost/test/unit_test.hpp>
 
 using crabgrab::notification_icon;
+namespace message_icon = crabgrab::message_icon;
 
 using winapi::gui::load_icon;
 using winapi::gui::hicon;
@@ -129,16 +130,22 @@ BOOST_AUTO_TEST_CASE( show_notifications_consecutively )
 }
 
 /**
- * Show three separate notifications.
+ * Show multiple separate notifications.
+ * Cycle through the icon types.
  */
 BOOST_AUTO_TEST_CASE( show_multiple_notifications )
 {
     notification_icon icon(dummy_icon().get());
-    icon.show_message("Testing ...", "1");
+    icon.show_message("Testing ...", "No icon", message_icon::none);
     ::Sleep(300);
-    icon.show_message("Testing ...", "2");
+    icon.show_message("Testing ...", "Error", message_icon::error);
     ::Sleep(300);
-    icon.show_message("Testing ...", "3");
+    icon.show_message("Testing ...", "Information", message_icon::information);
+    ::Sleep(300);
+    icon.show_message("Testing ...", "Warning", message_icon::warning);
+    ::Sleep(300);
+    icon.show_message(
+        "Testing ...", "Default icon type", message_icon::default);
     ::Sleep(300);
 }
 

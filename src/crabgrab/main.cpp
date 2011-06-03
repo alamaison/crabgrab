@@ -88,7 +88,24 @@ void notification_message(const string& title, const string& message)
 {
     try
     {
-        tray_icon().show_message(title, message);
+        tray_icon().show_message(title, message, message_icon::information);
+    }
+    catch (const exception& e)
+    {
+        cerr << "NOTIFICATION FAILURE:" << endl;
+        cerr << diagnostic_information(e) << endl;
+    }
+}
+
+/**
+ * Display a balloon message on Crabgrab's notification icon using the error
+ * icon.
+ */
+void error_message(const string& title, const string& message)
+{
+    try
+    {
+        tray_icon().show_message(title, message, message_icon::error);
     }
     catch (const exception& e)
     {
@@ -122,7 +139,7 @@ void grab_window(HWND hwnd)
     }
     catch (const twitpic::twitpic_exception& e)
     {
-        std::cerr << "FAILED: " << e.what() << std::endl;
+        error_message("Upload failed", e.what());
         return;
     }
 
@@ -132,6 +149,7 @@ void grab_window(HWND hwnd)
     }
     catch (const exception& e)
     {
+        error_message("Crabgrab error", "Unable to save URL to the clipboard");
         cerr << "CLIPBOARD FAILURE: " << endl;
         cerr << diagnostic_information(e) << endl; 
         cout <<
