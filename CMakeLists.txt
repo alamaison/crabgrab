@@ -7,23 +7,26 @@ include_directories(src/urdl/include)
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 	# Windows specific includes
 	include_directories(src/win32)
+	set(PLATFORM "win32")
 	include_directories(src/win32/winapi/include)
 	include_directories(src/win32/comet/include)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 	#Linux specific includes
+	set(PLATFORM "linux")
 	include_directories(src/linux)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 	#Mac specific includes
+	set(PLATFORM "darwin")
 	include_directories(src/darwin)
 ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ## Boost
 
-set(Boost_USE_STATIC_LIBS TRUE)
+# set(Boost_USE_STATIC_LIBS TRUE)
 set(Boost_DETAILED_FAILURE_MSG TRUE)
 set(Boost_ADDITIONAL_VERSIONS 1.46.1)
 # 1.41 is first version with Boost.PropertyTree
