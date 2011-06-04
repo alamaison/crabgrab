@@ -3,8 +3,23 @@ project(crabgrab)
 
 include_directories(src)
 include_directories(src/urdl/include)
-include_directories(src/winapi/include)
-include_directories(src/comet/include)
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+	# Windows specific includes
+	include_directories(src/win32)
+	include_directories(src/win32/winapi/include)
+	include_directories(src/win32/comet/include)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	#Linux specific includes
+	include_directories(src/linux)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	#Mac specific includes
+	include_directories(src/darwin)
+ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ## Boost
 
@@ -12,7 +27,7 @@ set(Boost_USE_STATIC_LIBS TRUE)
 set(Boost_DETAILED_FAILURE_MSG TRUE)
 set(Boost_ADDITIONAL_VERSIONS 1.46.1)
 # 1.41 is first version with Boost.PropertyTree
-find_package(Boost 1.41 REQUIRED COMPONENTS filesystem system thread)
+find_package(Boost 1.41 REQUIRED COMPONENTS filesystem system)
 link_directories(${Boost_LIBRARY_DIRS})
 include_directories(${Boost_INCLUDE_DIRS})
 
