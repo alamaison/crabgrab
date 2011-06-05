@@ -1,7 +1,7 @@
 /**
     @file
 
-    Tests for screenshot grabbing.
+    Screenshotting, Mac stylie.
 
     @if license
 
@@ -29,34 +29,18 @@
     @endif
 */
 
-#include "crabgrab/screenshot.hpp" // test subject
-
-#include <boost/test/unit_test.hpp>
+#ifndef CRABGRAB_DARWIN_CRABGRAB_SCREENSHOT_HPP
+#define CRABGRAB_DARWIN_CRABGRAB_SCREENSHOT_HPP
 
 #include <vector>
 
-using crabgrab::take_screenshot;
+namespace crabgrab {
 
-using std::vector;
-
-BOOST_AUTO_TEST_SUITE(screenshot_tests)
-
-/**
- * Take complete screengrab.
- */
-BOOST_AUTO_TEST_CASE( grab_whole_desktop )
+inline std::vector<unsigned char> take_screenshot(bool use_entire_window)
 {
-    vector<unsigned char> bmp = take_screenshot(true);
-    BOOST_CHECK_GT(bmp.size(), 640U * 480U * 16U);
+    return std::vector<unsigned char>();
 }
 
-/**
- * Take screenshot of current window.
- */
-BOOST_AUTO_TEST_CASE( grab_single_window )
-{
-    vector<unsigned char> bmp = take_screenshot(false);
-    BOOST_CHECK_GT(bmp.size(), 100U);
 }
 
-BOOST_AUTO_TEST_SUITE_END();
+#endif

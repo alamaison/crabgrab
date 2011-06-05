@@ -111,10 +111,7 @@ void error_message(const string& title, const string& message)
 
 void grab_window(bool use_entire_window)
 {
-    HWND hwnd = (use_entire_window) ?
-        ::GetDesktopWindow() : ::GetForegroundWindow();
-
-    std::vector<unsigned char> bmp = take_screenshot(hwnd);
+    std::vector<unsigned char> bmp = take_screenshot(use_entire_window);
 
     std::cout << "TwitPic username: ";
     std::string username;

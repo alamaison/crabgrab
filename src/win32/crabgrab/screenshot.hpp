@@ -29,8 +29,8 @@
     @endif
 */
 
-#ifndef CRABGRAB_SCREENSHOT_HPP
-#define CRABGRAB_SCREENSHOT_HPP
+#ifndef CRABGRAB_WIN32_CRABGRAB_SCREENSHOT_HPP
+#define CRABGRAB_WIN32_CRABGRAB_SCREENSHOT_HPP
 
 #include "crabgrab/convert_hbitmap.hpp" // convert_hbitmap_to_bmp
 
@@ -50,12 +50,14 @@
 
 #include <Windows.h> // GetWindowDC, ReleaseDC, CreateCompatibleDC, DeleteDC
                      // GetWindowRect, CreateCompatibleBitmap, DeleteObject,
-                     // SelectObject, BitBlt
+                     // SelectObject, BitBlt, GetDesktopWindow,
+                     // GetForegroundWindow
 
 namespace crabgrab {
 
-inline std::vector<unsigned char> take_screenshot(
-    HWND hwnd=::GetDesktopWindow())
+namespace detail {
+
+inline std::vector<unsigned char> take_screenshot(HWND hwnd)
 {
     boost::shared_ptr<boost::remove_pointer<HDC>::type> window_device_context(
         ::GetWindowDC(hwnd), boost::bind<int>(::ReleaseDC, hwnd, _1));
@@ -98,6 +100,14 @@ inline std::vector<unsigned char> take_screenshot(
 
     return convert_hbitmap_to_bmp(
         snapshot.get(), snapshot_device_context.get());
+}
+
+}
+
+inline std::vector<unsigned char> take_screenshot(bool use_entire_window)
+{
+    return detail::take_screenshot(
+        (use_entire_window) ? ::GetDesktopWindow() : ::GetForegroundWindow());
 }
 
 }
