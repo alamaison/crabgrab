@@ -31,14 +31,11 @@
 
 #include "crabgrab/clipboard.hpp" // put_clipboard_text
 #include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/feedback.hpp" // information_message, error_message
 #include "crabgrab/keyboard_hook.hpp" // install_keyboard_hook
 #include "crabgrab/screenshot.hpp" // take_screenshot
-#include "crabgrab/notification.hpp" // notification_icon
 #include "crabgrab/twitpic/response.hpp" // handle_response
 #include "crabgrab/twitpic/twitpic.hpp"
-
-#include <winapi/dynamic_link.hpp> // module_handle
-#include <winapi/gui/icon.hpp> // load_icon
 
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
 
@@ -47,9 +44,6 @@
 
 #include <Windows.h>
 #include <tchar.h>
-
-using winapi::gui::load_icon;
-using winapi::module_handle;
 
 using boost::diagnostic_information;
 
@@ -60,54 +54,8 @@ using std::exception;
 using std::string;
 
 namespace crabgrab {
-
+    
 namespace {
-
-/**
- * Return Crabgrab's tray icon.
- *
- * There is only one instance of the icon as a static variable.  This ensures
- * we don't clutter the tray with multiple, possibly stale icons.
- */
-notification_icon& tray_icon()
-{
-    static notification_icon icon(
-        load_icon(module_handle("user32.dll"), 104, 16, 16).get());
-    return icon;
-}
-
-/**
- * Display a balloon message on Crabgrab's notification icon.
- */
-void notification_message(const string& title, const string& message)
-{
-    try
-    {
-        tray_icon().show_message(title, message, message_icon::information);
-    }
-    catch (const exception& e)
-    {
-        cerr << "NOTIFICATION FAILURE:" << endl;
-        cerr << diagnostic_information(e) << endl;
-    }
-}
-
-/**
- * Display a balloon message on Crabgrab's notification icon using the error
- * icon.
- */
-void error_message(const string& title, const string& message)
-{
-    try
-    {
-        tray_icon().show_message(title, message, message_icon::error);
-    }
-    catch (const exception& e)
-    {
-        cerr << "NOTIFICATION FAILURE:" << endl;
-        cerr << diagnostic_information(e) << endl;
-    }
-}
 
 void grab_window(bool use_entire_window)
 {
@@ -121,7 +69,7 @@ void grab_window(bool use_entire_window)
     std::string password;
     std::cin >> password;
 
-    notification_message(
+    information_message(
         "Crabgrab", "Uploading your screenshot to TwitPic ...");
 
     std::string xml_response = twitpic::upload_image(
@@ -153,7 +101,7 @@ void grab_window(bool use_entire_window)
         return;
     }
 
-    notification_message(
+    information_message(
         "Crabgrab", "The link to your screenshot is on the clipboard.");
 }
 

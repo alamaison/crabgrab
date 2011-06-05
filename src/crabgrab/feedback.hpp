@@ -1,7 +1,7 @@
 /**
     @file
 
-    User notification.
+    Platform-independent notification interface for Crabgrab.
 
     @if license
 
@@ -29,45 +29,22 @@
     @endif
 */
 
-#ifndef CRABGRAB_NOTIFICATION_HPP
-#define CRABGRAB_NOTIFICATION_HPP
-
-#include <boost/shared_ptr.hpp> // shared_ptr
+#ifndef CRABGRAB_FEEDBACK_HPP
+#define CRABGRAB_FEEDBACK_HPP
 
 #include <string>
 
-#include <Windows.h> // HICON
-
 namespace crabgrab {
 
-namespace message_icon {
-    enum type
-    {
-        none,
-        information,
-        warning,
-        error,
-        default = none
-    };
-}
+/**
+ * Inform the user of some general information.
+ */
+void information_message(const std::string& title, const std::string& message);
 
-class notification_icon
-{
-public:
-    void show_message(
-        const std::string& title, const std::string& message,
-        message_icon::type icon_type=message_icon::default);
-
-    notification_icon(HICON icon);
-
-private:
-    // No matter how many times this icon is copied, it must only be deleted
-    // from the system tray once.  Therefore all icon instances share a single
-    // implementation instance.  Essentially, this makes notification_icon an
-    // augmented shared_ptr interface.
-    class icon_impl;
-    boost::shared_ptr<icon_impl> m_impl;
-};
+/**
+ * Inform the user of an error.
+ */
+void error_message(const std::string& title, const std::string& message);
 
 }
 

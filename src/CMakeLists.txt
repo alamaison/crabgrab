@@ -4,14 +4,14 @@ set(CRABGRAB_SOURCES
   crabgrab/clipboard.hpp
   crabgrab/encode_bmp.hpp
   crabgrab/encode_bmp.cpp
-  crabgrab/notification.hpp
-  crabgrab/notification.cpp
+  crabgrab/feedback.hpp
   crabgrab/twitpic/generate_body.hpp
   crabgrab/twitpic/generate_body.cpp
   crabgrab/twitpic/response.hpp
   crabgrab/twitpic/response.cpp
   crabgrab/twitpic/twitpic.hpp
   crabgrab/twitpic/twitpic.cpp
+  ${PLATFORM}/crabgrab/feedback.cpp
   ${PLATFORM}/crabgrab/keyboard_hook.hpp
   ${PLATFORM}/crabgrab/screenshot.hpp
 )
@@ -22,6 +22,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
       win32/bitmap.h
       win32/crabgrab/convert_hbitmap.hpp
       win32/crabgrab/keyboard_hook.cpp
+      win32/crabgrab/notification.hpp
+      win32/crabgrab/notification.cpp
     )
 endif()
 

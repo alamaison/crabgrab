@@ -5,8 +5,9 @@ find_package(
   COMPONENTS system unit_test_framework)
 
 file(GLOB TEST_SOURCES *.cpp *.hpp)
+file(GLOB PLATFORM_SPECIFIC_TEST_SOURCES ${PLATFORM}/*.cpp ${PLATFORM}/*.hpp)
 
-add_executable(tests ${TEST_SOURCES})
+add_executable(tests ${TEST_SOURCES} ${PLATFORM_SPECIFIC_TEST_SOURCES})
 target_link_libraries(tests crabgrab-lib)
 get_target_property(test_EXE tests LOCATION)
 
