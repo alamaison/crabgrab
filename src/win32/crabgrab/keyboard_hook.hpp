@@ -69,6 +69,11 @@ typedef winapi::hhook keyboard_hook;
 keyboard_hook install_keyboard_hook(
     const boost::function<void (bool)>& screenshot_action);
 
+/**
+ * Run whatever event loop is needed for the keyboard hook.
+ */
+void listen();
+
 }
 
 #endif

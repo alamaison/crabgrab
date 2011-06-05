@@ -42,7 +42,6 @@
 #include <iostream> // cout, cin, cerr
 #include <string>
 
-#include <Windows.h>
 #include <tchar.h>
 
 using boost::diagnostic_information;
@@ -108,13 +107,7 @@ void grab_window(bool use_entire_window)
 void run()
 {
     keyboard_hook hook = install_keyboard_hook(grab_window);
-
-    MSG message;
-    while (::GetMessage(&message, NULL, 0, 0) != 0)
-    {
-        ::TranslateMessage(&message);
-        ::DispatchMessage(&message);
-    }
+    listen();
 }
 
 }

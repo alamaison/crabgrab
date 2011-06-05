@@ -59,6 +59,11 @@ keyboard_hook install_keyboard_hook(
     return 1;
 }
 
+void listen()
+{
+    while (true);
+}
+
 }
 
 #endif

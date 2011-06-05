@@ -41,7 +41,8 @@
 
 #include <exception> // exception
 
-#include <Windows.h> // CallNextHookEx, KBDLLHOOKSTRUCT
+#include <Windows.h> // CallNextHookEx, KBDLLHOOKSTRUCT, GetMessage,
+                     // TranslateMessage, DispatchMessage
 
 using winapi::trace;
 using winapi::windows_global_hook;
@@ -184,6 +185,16 @@ keyboard_hook install_keyboard_hook(
     // I didn't find it.)
     g_screenshot_action = screenshot_action;
     return windows_global_hook(WH_KEYBOARD_LL, &hook_proc);
+}
+
+void listen()
+{
+    MSG message;
+    while (::GetMessage(&message, NULL, 0, 0) != 0)
+    {
+        ::TranslateMessage(&message);
+        ::DispatchMessage(&message);
+    }
 }
 
 }
