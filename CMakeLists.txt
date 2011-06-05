@@ -26,7 +26,7 @@ ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 ## Boost
 
-# set(Boost_USE_STATIC_LIBS TRUE)
+set(Boost_USE_STATIC_LIBS TRUE)
 set(Boost_DETAILED_FAILURE_MSG TRUE)
 set(Boost_ADDITIONAL_VERSIONS 1.46.1)
 # 1.41 is first version with Boost.PropertyTree
