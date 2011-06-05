@@ -14,18 +14,23 @@ set(CRABGRAB_SOURCES
   crabgrab/twitpic/response.cpp
   crabgrab/twitpic/twitpic.hpp
   crabgrab/twitpic/twitpic.cpp
+  ${PLATFORM}/crabgrab/keyboard_hook.hpp
 )
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+    # Windows-only sources
+    set(CRABGRAB_SOURCES ${CRABGRAB_SOURCES}
+      win32/crabgrab/keyboard_hook.cpp
+      win32/bitmap.h
+    )
+endif()
 
 set(LODEPNG_SOURCES
   LodePNG/lodepng.h
   LodePNG/lodepng.cpp
 )
 
-set(BITMAP_SOURCES
-  ${PLATFORM}/bitmap.h 
-)
-
-set(SOURCES ${CRABGRAB_SOURCES} ${LODEPNG_SOURCES} ${BITMAP_SOURCES})
+set(SOURCES ${CRABGRAB_SOURCES} ${LODEPNG_SOURCES})
 
 # This bit just prettyfies the source hierarchy in Visual Studio
 macro(group_by_hierarchy PROJECT_SOURCES)

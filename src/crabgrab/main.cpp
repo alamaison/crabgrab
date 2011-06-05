@@ -31,6 +31,7 @@
 
 #include "crabgrab/clipboard.hpp" // put_clipboard_text
 #include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/keyboard_hook.hpp" // install_keyboard_hook
 #include "crabgrab/screenshot.hpp" // take_screenshot
 #include "crabgrab/notification.hpp" // notification_icon
 #include "crabgrab/twitpic/response.hpp" // handle_response
@@ -38,12 +39,8 @@
 
 #include <winapi/dynamic_link.hpp> // module_handle
 #include <winapi/gui/icon.hpp> // load_icon
-#include <winapi/hook.hpp> // windows_hook
 
 #include <boost/exception/diagnostic_information.hpp> // diagnostic_information
-#include <boost/make_shared.hpp> // make_shared
-#include <boost/shared_ptr.hpp> // shared_ptr
-#include <boost/thread.hpp> // thread
 
 #include <iostream> // cout, cin, cerr
 #include <string>
@@ -52,13 +49,9 @@
 #include <tchar.h>
 
 using winapi::gui::load_icon;
-using winapi::gui::hicon;
 using winapi::module_handle;
 
 using boost::diagnostic_information;
-using boost::make_shared;
-using boost::shared_ptr;
-using boost::thread;
 
 using std::cerr;
 using std::cout;
@@ -116,8 +109,11 @@ void error_message(const string& title, const string& message)
     }
 }
 
-void grab_window(HWND hwnd)
+void grab_window(bool use_entire_window)
 {
+    HWND hwnd = (use_entire_window) ?
+        ::GetDesktopWindow() : ::GetForegroundWindow();
+
     std::vector<unsigned char> bmp = take_screenshot(hwnd);
 
     std::cout << "TwitPic username: ";
@@ -153,7 +149,7 @@ void grab_window(HWND hwnd)
     {
         error_message("Crabgrab error", "Unable to save URL to the clipboard");
         cerr << "CLIPBOARD FAILURE: " << endl;
-        cerr << diagnostic_information(e) << endl; 
+        cerr << diagnostic_information(e) << endl;
         cout <<
             "Crabgrab couldn't put the link to your screenshot onto the "
             "clipboard so here it is instead: " << url << endl;
@@ -164,110 +160,9 @@ void grab_window(HWND hwnd)
         "Crabgrab", "The link to your screenshot is on the clipboard.");
 }
 
-
-class window_hook_procedure
-{
-public:
-    virtual ~window_hook_procedure() {}
-
-    LRESULT call_next_hook(
-        int nCode, WPARAM wParam, LPARAM lParam)
-    {
-        return ::CallNextHookEx(NULL /*hhook*/, nCode, wParam, lParam);
-    }
-
-};
-
-class low_level_keyboard_hook_procedure : public window_hook_procedure
-{
-private:
-    virtual bool operator()(int message, KBDLLHOOKSTRUCT& input_event) = 0;
-
-public:
-
-    LRESULT CALLBACK hook_proc(int code, WPARAM wparam, LPARAM lparam)
-    {
-        if (code < HC_ACTION)
-            return call_next_hook(code, wparam, lparam);
-
-        if ((*this)(wparam, *reinterpret_cast<KBDLLHOOKSTRUCT*>(lparam)))
-            return TRUE; // handled
-
-        return call_next_hook(code, wparam, lparam);
-    }
-};
-
-class crabgrab_keyboard_hook : public low_level_keyboard_hook_procedure
-{
-public:
-    crabgrab_keyboard_hook() : m_is_shift_pressed(false) {}
-
-private:
-    virtual bool operator()(int message, KBDLLHOOKSTRUCT& input_event)
-    {
-        switch (message)
-        {
-        case WM_KEYDOWN:
-        case WM_SYSKEYDOWN:
-            switch (input_event.vkCode)
-            {
-            case VK_LSHIFT:
-            case VK_RSHIFT:
-                {
-                    m_is_shift_pressed = true;
-                    return false;
-                }
-            case VK_SNAPSHOT:
-                {
-                    HWND hwnd = (m_is_shift_pressed) ?
-                        ::GetForegroundWindow() : ::GetDesktopWindow();
-
-                    try
-                    {
-                        boost::thread(grab_window, hwnd);
-                    }
-                    catch (const exception& e)
-                    {
-                        cerr << "Unhandled exception in keyboard hook:" << endl;
-                        cerr << diagnostic_information(e) << endl;
-                    }
-
-                    return true;
-                }
-            }
-
-            break;
-
-        case WM_KEYUP:
-        case WM_SYSKEYUP:
-            switch (input_event.vkCode)
-            {
-            case VK_LSHIFT:
-            case VK_RSHIFT:
-                {
-                    m_is_shift_pressed = false;
-                    return false;
-                }
-            }
-
-            break;
-        }
-
-        return false;
-    }
-
-    bool m_is_shift_pressed;
-};
-
-LRESULT CALLBACK hook_proc(int code, WPARAM wparam, LPARAM lparam)
-{
-    static crabgrab_keyboard_hook hook;
-    return hook.hook_proc(code, wparam, lparam);
-}
-
 void run()
 {
-    winapi::hhook hhook = winapi::windows_global_hook(WH_KEYBOARD_LL, &hook_proc);
+    keyboard_hook hook = install_keyboard_hook(grab_window);
 
     MSG message;
     while (::GetMessage(&message, NULL, 0, 0) != 0)
