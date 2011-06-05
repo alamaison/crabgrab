@@ -42,8 +42,6 @@
 #include <iostream> // cout, cin, cerr
 #include <string>
 
-#include <tchar.h>
-
 using boost::diagnostic_information;
 
 using std::cerr;
@@ -113,7 +111,7 @@ void run()
 }
 }
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char* argv[])
 {
     try
     {
