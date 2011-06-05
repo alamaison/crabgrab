@@ -1,7 +1,7 @@
 /**
     @file
 
-    Tests for screenshot grabbing.
+    Bitmap to raw pixel data conversion.
 
     @if license
 
@@ -29,39 +29,39 @@
     @endif
 */
 
-#include "crabgrab/screenshot.hpp" // test subject
+#ifndef CRABGRAB_WIN32_CRABGRAB_BITMAP_TO_RAW
+#define CRABGRAB_WIN32_CRABGRAB_BITMAP_TO_RAW
 
-#include <boost/test/unit_test.hpp>
+#include <cstdint> // uint8_t
+#include <vector>
 
-using crabgrab::raw_image;
-using crabgrab::take_screenshot;
+namespace crabgrab {
 
-BOOST_AUTO_TEST_SUITE(screenshot_tests)
-
-/**
- * Take complete screengrab.
- */
-BOOST_AUTO_TEST_CASE( grab_whole_desktop )
+class raw_image
 {
-    raw_image image = take_screenshot(true);
+public:
+    raw_image(
+        size_t width, size_t height,
+        const std::vector<std::uint8_t>& pixel_data) 
+        : m_width(width), m_height(height), m_pixel_data(pixel_data) {}
 
-    // 4 is the size of one raw pixel in bytes
-    BOOST_CHECK_GT(image.pixel_data().size(), 640U * 480U * 4U);
-    BOOST_CHECK_GT(image.width(), 640U);
-    BOOST_CHECK_GT(image.height(), 480U);
+    size_t width() const { return m_width; }
+
+    size_t height() const { return m_height; }
+
+    const std::vector<std::uint8_t>& pixel_data() const
+    {
+        return m_pixel_data;
+    }
+
+private:
+    size_t m_width;
+    size_t m_height;
+    std::vector<std::uint8_t> m_pixel_data;
+};
+
+raw_image convert_bitmap_to_raw(const std::vector<std::uint8_t>& bmp_bytes);
+
 }
 
-/**
- * Take screenshot of current window.
- */
-BOOST_AUTO_TEST_CASE( grab_single_window )
-{
-    raw_image image = take_screenshot(false);
-
-    // 4 is the size of one raw pixel in bytes
-    BOOST_CHECK_GT(image.pixel_data().size(), 100U * 4U);
-    BOOST_CHECK_GT(image.width(), 10U);
-    BOOST_CHECK_GT(image.height(), 10U);
-}
-
-BOOST_AUTO_TEST_SUITE_END();
+#endif

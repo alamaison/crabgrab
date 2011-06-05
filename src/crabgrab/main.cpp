@@ -30,7 +30,7 @@
 */
 
 #include "crabgrab/clipboard.hpp" // put_clipboard_text
-#include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/encode_image.hpp"
 #include "crabgrab/feedback.hpp" // information_message, error_message
 #include "crabgrab/keyboard_hook.hpp" // install_keyboard_hook
 #include "crabgrab/screenshot.hpp" // take_screenshot
@@ -51,12 +51,12 @@ using std::exception;
 using std::string;
 
 namespace crabgrab {
-    
+
 namespace {
 
 void grab_window(bool use_entire_window)
 {
-    std::vector<unsigned char> bmp = take_screenshot(use_entire_window);
+    raw_image shot = take_screenshot(use_entire_window);
 
     std::cout << "TwitPic username: ";
     std::string username;
@@ -70,7 +70,9 @@ void grab_window(bool use_entire_window)
         "Crabgrab", "Uploading your screenshot to TwitPic ...");
 
     std::string xml_response = twitpic::upload_image(
-        username, password, encode_as_png(bmp));
+        username, password,
+        encode_as_png(
+            shot.pixel_data(), shot.width(), shot.height()));
 
     std::string url;
     try

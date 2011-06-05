@@ -32,6 +32,7 @@
 #ifndef CRABGRAB_WIN32_CRABGRAB_SCREENSHOT_HPP
 #define CRABGRAB_WIN32_CRABGRAB_SCREENSHOT_HPP
 
+#include "crabgrab/bitmap_to_raw.hpp" // convert_bitmap_to_raw
 #include "crabgrab/convert_hbitmap.hpp" // convert_hbitmap_to_bmp
 
 #include <winapi/error.hpp> // last_error
@@ -57,7 +58,7 @@ namespace crabgrab {
 
 namespace detail {
 
-inline std::vector<unsigned char> take_screenshot(HWND hwnd)
+inline raw_image take_screenshot(HWND hwnd)
 {
     boost::shared_ptr<boost::remove_pointer<HDC>::type> window_device_context(
         ::GetWindowDC(hwnd), boost::bind<int>(::ReleaseDC, hwnd, _1));
@@ -98,13 +99,13 @@ inline std::vector<unsigned char> take_screenshot(HWND hwnd)
             boost::errinfo_api_function("BitBlt"));
     ::SelectObject(snapshot_device_context.get(), orig);
 
-    return convert_hbitmap_to_bmp(
-        snapshot.get(), snapshot_device_context.get());
+    return convert_bitmap_to_raw(
+        convert_hbitmap_to_bmp(snapshot.get(), snapshot_device_context.get()));
 }
 
 }
 
-inline std::vector<unsigned char> take_screenshot(bool use_entire_window)
+inline raw_image take_screenshot(bool use_entire_window)
 {
     return detail::take_screenshot(
         (use_entire_window) ? ::GetDesktopWindow() : ::GetForegroundWindow());

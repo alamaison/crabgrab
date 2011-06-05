@@ -1,7 +1,7 @@
 /**
     @file
 
-    Bitmap to PNG conversion
+    Raw pixel data to PNG conversion.
 
     @if license
 
@@ -29,15 +29,15 @@
     @endif
 */
 
-#ifndef CRABGRAB_ENCODE_BMP_HPP
-#define CRABGRAB_ENCODE_BMP_HPP
+#ifndef CRABGRAB_ENCODE_IMAGE_HPP
+#define CRABGRAB_ENCODE_IMAGE_HPP
 
 #include <vector>
 
 namespace crabgrab {
 
 std::vector<unsigned char> encode_as_png(
-    const std::vector<unsigned char>& bmp_bytes);
+    const std::vector<unsigned char>& raw_bytes, size_t width, size_t height);
 
 }
 

@@ -1,7 +1,7 @@
 /**
     @file
 
-    Tests for screenshot grabbing.
+    Raw pixel data to PNG conversion.
 
     @if license
 
@@ -29,39 +29,36 @@
     @endif
 */
 
-#include "crabgrab/screenshot.hpp" // test subject
+#include "crabgrab/encode_image.hpp"
 
-#include <boost/test/unit_test.hpp>
+#include <LodePNG/lodepng.h>
 
-using crabgrab::raw_image;
-using crabgrab::take_screenshot;
+#include <boost/throw_exception.hpp> // BOOST_THROW_EXCEPTION
 
-BOOST_AUTO_TEST_SUITE(screenshot_tests)
+#include <stdexcept> // runtime_error
 
-/**
- * Take complete screengrab.
- */
-BOOST_AUTO_TEST_CASE( grab_whole_desktop )
-{
-    raw_image image = take_screenshot(true);
+using LodePNG::Encoder;
 
-    // 4 is the size of one raw pixel in bytes
-    BOOST_CHECK_GT(image.pixel_data().size(), 640U * 480U * 4U);
-    BOOST_CHECK_GT(image.width(), 640U);
-    BOOST_CHECK_GT(image.height(), 480U);
-}
+using std::runtime_error;
+
+namespace crabgrab {
 
 /**
- * Take screenshot of current window.
+ * @todo  Throw exception on error instead of printing to cout.
  */
-BOOST_AUTO_TEST_CASE( grab_single_window )
+std::vector<unsigned char> encode_as_png(
+    const std::vector<unsigned char>& raw_bytes, size_t width, size_t height)
 {
-    raw_image image = take_screenshot(false);
+    std::vector<unsigned char> png_out;
 
-    // 4 is the size of one raw pixel in bytes
-    BOOST_CHECK_GT(image.pixel_data().size(), 100U * 4U);
-    BOOST_CHECK_GT(image.width(), 10U);
-    BOOST_CHECK_GT(image.height(), 10U);
+    Encoder encoder;
+    encoder.getSettings().autoLeaveOutAlphaChannel = 1;
+    encoder.encode(png_out, raw_bytes, width, height);
+    if(encoder.hasError())
+        BOOST_THROW_EXCEPTION(
+            runtime_error(LodePNG_error_text(encoder.getError())));
+
+    return png_out;
 }
 
-BOOST_AUTO_TEST_SUITE_END();
+}

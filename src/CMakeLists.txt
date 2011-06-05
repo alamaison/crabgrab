@@ -2,8 +2,8 @@
 
 set(CRABGRAB_SOURCES
   crabgrab/clipboard.hpp
-  crabgrab/encode_bmp.hpp
-  crabgrab/encode_bmp.cpp
+  crabgrab/encode_image.hpp
+  crabgrab/encode_image.cpp
   crabgrab/feedback.hpp
   crabgrab/twitpic/generate_body.hpp
   crabgrab/twitpic/generate_body.cpp
@@ -20,6 +20,8 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     # Windows-only sources
     set(CRABGRAB_SOURCES ${CRABGRAB_SOURCES}
       win32/bitmap.h
+      win32/crabgrab/bitmap_to_raw.hpp
+      win32/crabgrab/bitmap_to_raw.cpp
       win32/crabgrab/convert_hbitmap.hpp
       win32/crabgrab/keyboard_hook.cpp
       win32/crabgrab/notification.hpp

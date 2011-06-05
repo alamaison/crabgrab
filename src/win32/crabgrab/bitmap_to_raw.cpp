@@ -1,7 +1,7 @@
 /**
     @file
 
-    Bitmap to PNG conversion
+    Bitmap to raw pixel data conversion.
 
     @if license
 
@@ -29,36 +29,37 @@
     @endif
 */
 
-#include "crabgrab/encode_bmp.hpp"
+#include "crabgrab/bitmap_to_raw.hpp"
 
-#include <bitmap.h>
-#include <LodePNG/lodepng.h>
+#include <bitmap.h> // CBitmap
 
 #include <algorithm> // copy
 #include <cassert> // assert
 #include <sstream> // stringstream
 
+using std::ostreambuf_iterator;
+using std::stringstream;
+using std::uint8_t;
+using std::vector;
+
 namespace crabgrab {
 
 namespace {
 
-    void convert_row(
-        unsigned char* row, size_t row_width,
-        std::vector<unsigned char>& raw_out)
+void convert_row(uint8_t* row, size_t row_width, vector<uint8_t>& raw_out)
+{
+    for (size_t i = 0; i < row_width; ++i)
     {
-        for (size_t i = 0; i < row_width; ++i)
-        {
-            if (i % 4 == 3)
-                raw_out.push_back(0xff);
-            else
-                raw_out.push_back(row[i]);
-        }
+        if (i % 4 == 3)
+            raw_out.push_back(0xff);
+        else
+            raw_out.push_back(row[i]);
     }
 }
 
-std::vector<unsigned char> convert_bitmap_lines_to_raw(CBitmap& bitmap)
+vector<uint8_t> convert_bitmap_lines_to_raw(CBitmap& bitmap)
 {
-    std::vector<unsigned char> raw;
+    vector<uint8_t> raw;
 
     size_t raw_byte_size;
     bitmap.GetBits(NULL, raw_byte_size);
@@ -71,7 +72,7 @@ std::vector<unsigned char> convert_bitmap_lines_to_raw(CBitmap& bitmap)
     // total size should be exact multiple of row size
     assert((raw_byte_size % row_width) == 0);
 
-    unsigned char* start = reinterpret_cast<unsigned char*>(bitmap.GetBits());
+    uint8_t* start = reinterpret_cast<uint8_t*>(bitmap.GetBits());
 
     for (size_t h = bitmap.GetHeight(); h > 0; --h)
     {
@@ -82,32 +83,21 @@ std::vector<unsigned char> convert_bitmap_lines_to_raw(CBitmap& bitmap)
     return raw;
 }
 
-std::vector<unsigned char> encode_as_png(
-    const std::vector<unsigned char>& bmp_bytes)
+}
+
+raw_image convert_bitmap_to_raw(const vector<uint8_t>& bmp_bytes)
 {
-    std::stringstream stream;
-    std::copy(
-        bmp_bytes.begin(), bmp_bytes.end(),
-        std::ostreambuf_iterator<char>(stream));
+    stringstream stream;
+    copy(
+        bmp_bytes.begin(), bmp_bytes.end(), ostreambuf_iterator<char>(stream));
 
     CBitmap bitmap;
     stream.seekg(0);
     bitmap.Load(stream);
 
-    std::vector<unsigned char> png_out;
-    LodePNG::Encoder encoder;
-    encoder.getSettings().autoLeaveOutAlphaChannel = 1;
-    encoder.encode(
-        png_out, convert_bitmap_lines_to_raw(bitmap), bitmap.GetWidth(),
-        bitmap.GetHeight());
-    if(encoder.hasError())
-    {
-        std::cout << "Encoder error " << encoder.getError() << ": " <<
-            LodePNG_error_text(encoder.getError()) << std::endl;
-        return std::vector<unsigned char>();
-    }
-
-    return png_out;
+    return raw_image(
+        bitmap.GetWidth(), bitmap.GetHeight(),
+        convert_bitmap_lines_to_raw(bitmap));
 }
 
 }
